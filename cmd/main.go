@@ -35,6 +35,7 @@ func main() {
 		dryRun       bool
 		noCache      bool
 		threshold    int
+		slackUsers   string
 	)
 
 	monitorCmd := scotty.Command{
@@ -55,6 +56,7 @@ func main() {
 			flags.BoolVarE(&dryRun, "dry-run", "GHCONTRIB_DRY_RUN", false, "Print notifications to console instead of sending to Slack")
 			flags.BoolVarE(&noCache, "no-cache", "GHCONTRIB_NO_CACHE", false, "Disable ETag caching, always fetch fresh data")
 			flags.IntVarE(&threshold, "threshold", "GHCONTRIB_THRESHOLD", 0, "Minimum expected contributions per user; warns if below")
+			flags.StringVarE(&slackUsers, "slack-users", "GHCONTRIB_SLACK_USERS", "", "GitHub-to-Slack user mapping (e.g., ghUser1:U012ABC,ghUser2:U345DEF)")
 		},
 		Run: func(cmd *scotty.Command, args []string) error {
 			if err := validateFlags(org, users, githubToken, slackWebhook, slackToken, slackChannel, dryRun); err != nil {
@@ -80,7 +82,8 @@ func main() {
 			}
 
 			skipDedupe := noCache
-			mon := monitor.New(githubClient, slackNotifier, org, userList, showDetails, skipDedupe, threshold)
+			slackUserMap := parseSlackUsers(slackUsers)
+			mon := monitor.New(githubClient, slackNotifier, org, userList, showDetails, skipDedupe, threshold, slackUserMap)
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
@@ -144,6 +147,20 @@ func validateFlags(org, users, githubToken, slackWebhook, slackToken, slackChann
 	}
 
 	return nil
+}
+
+func parseSlackUsers(mapping string) map[string]string {
+	result := make(map[string]string)
+	if mapping == "" {
+		return result
+	}
+	for _, pair := range strings.Split(mapping, ",") {
+		parts := strings.SplitN(strings.TrimSpace(pair), ":", 2)
+		if len(parts) == 2 {
+			result[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
+		}
+	}
+	return result
 }
 
 func parseUsers(users string) []string {

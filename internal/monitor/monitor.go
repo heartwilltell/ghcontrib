@@ -19,11 +19,12 @@ type Monitor struct {
 	showDetails   bool
 	skipDedupe    bool
 	threshold     int
+	slackUsers    map[string]string
 	seenEvents    map[string]map[string]bool
 	mu            sync.Mutex
 }
 
-func New(githubClient *github.Client, slackNotifier slack.Notifier, org string, users []string, showDetails bool, skipDedupe bool, threshold int) *Monitor {
+func New(githubClient *github.Client, slackNotifier slack.Notifier, org string, users []string, showDetails bool, skipDedupe bool, threshold int, slackUsers map[string]string) *Monitor {
 	return &Monitor{
 		githubClient:  githubClient,
 		slackNotifier: slackNotifier,
@@ -32,6 +33,7 @@ func New(githubClient *github.Client, slackNotifier slack.Notifier, org string, 
 		showDetails:   showDetails,
 		skipDedupe:    skipDedupe,
 		threshold:     threshold,
+		slackUsers:    slackUsers,
 		seenEvents:    make(map[string]map[string]bool),
 	}
 }
@@ -92,7 +94,7 @@ func (m *Monitor) RunOnce(ctx context.Context) error {
 	}
 
 	log.Printf("Sending notification for %d events...", len(allNewEvents))
-	message := slack.FormatEventsMessage(allNewEvents, m.org, m.showDetails, m.threshold, m.users)
+	message := slack.FormatEventsMessage(allNewEvents, m.org, m.showDetails, m.threshold, m.users, m.slackUsers)
 	if err := m.slackNotifier.Send(ctx, message); err != nil {
 		return fmt.Errorf("failed to send Slack notification: %w", err)
 	}
