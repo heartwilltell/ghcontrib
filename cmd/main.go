@@ -34,6 +34,7 @@ func main() {
 		showDetails  bool
 		dryRun       bool
 		noCache      bool
+		threshold    int
 	)
 
 	monitorCmd := scotty.Command{
@@ -53,6 +54,7 @@ func main() {
 			flags.BoolVarE(&showDetails, "details", "GHCONTRIB_DETAILS", false, "Show detailed contribution information")
 			flags.BoolVarE(&dryRun, "dry-run", "GHCONTRIB_DRY_RUN", false, "Print notifications to console instead of sending to Slack")
 			flags.BoolVarE(&noCache, "no-cache", "GHCONTRIB_NO_CACHE", false, "Disable ETag caching, always fetch fresh data")
+			flags.IntVarE(&threshold, "threshold", "GHCONTRIB_THRESHOLD", 0, "Minimum expected contributions per user; warns if below")
 		},
 		Run: func(cmd *scotty.Command, args []string) error {
 			if err := validateFlags(org, users, githubToken, slackWebhook, slackToken, slackChannel, dryRun); err != nil {
@@ -78,7 +80,7 @@ func main() {
 			}
 
 			skipDedupe := noCache
-			mon := monitor.New(githubClient, slackNotifier, org, userList, showDetails, skipDedupe)
+			mon := monitor.New(githubClient, slackNotifier, org, userList, showDetails, skipDedupe, threshold)
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()

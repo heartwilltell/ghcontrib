@@ -138,5 +138,6 @@ func (c *ConsoleNotifier) Send(ctx context.Context, message Message) error {
 	}
 
 	fmt.Println(strings.Repeat("=", 60) + "\n")
+
 	return nil
 }

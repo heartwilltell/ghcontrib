@@ -30,11 +30,7 @@ type Accessory struct {
 	AltText  string `json:"alt_text"`
 }
 
-func FormatEventsMessage(events []github.Event, org string, showDetails bool) Message {
-	if len(events) == 0 {
-		return Message{}
-	}
-
+func FormatEventsMessage(events []github.Event, org string, showDetails bool, threshold int, users []string) Message {
 	userEvents := make(map[string][]github.Event)
 
 	for _, event := range events {
@@ -47,6 +43,24 @@ func FormatEventsMessage(events []github.Event, org string, showDetails bool) Me
 	for user, userEventList := range userEvents {
 		blocks = append(blocks, formatUserSummary(user, userEventList, showDetails)...)
 		textParts = append(textParts, formatUserText(user, userEventList, showDetails))
+	}
+
+	if threshold > 0 {
+		for _, user := range users {
+			count := len(userEvents[user])
+			if count >= threshold {
+				continue
+			}
+			warning := fmt.Sprintf(":warning: *%s* made fewer than %d contributions today. Please improve your stats.", user, threshold)
+			textParts = append(textParts, warning)
+			blocks = append(blocks, Block{
+				Type: "section",
+				Text: &TextBlock{
+					Type: "mrkdwn",
+					Text: warning,
+				},
+			})
+		}
 	}
 
 	return Message{
