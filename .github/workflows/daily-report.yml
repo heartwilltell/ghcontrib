@@ -1,0 +1,38 @@
+name: Daily GitHub Contributions Report
+
+on:
+  schedule:
+    # Runs at 15:00 UTC (16:00 CET / 17:00 CEST) on weekdays (Monday-Friday)
+    # Note: GitHub Actions uses UTC. Adjust if needed:
+    #   - 15:00 UTC = 16:00 CET (winter) / 17:00 CEST (summer)
+    #   - 14:00 UTC = 15:00 CET (winter) / 16:00 CEST (summer)
+    - cron: "0 20 * * 1-5"
+  # Allows manual triggering from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  monitor-contributions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+          cache: true
+
+      - name: Build ghcontrib
+        run: go build -o ghcontrib ./cmd
+
+      - name: Run contribution monitor
+        env:
+          GHCONTRIB_ORG: ${{ secrets.GHCONTRIB_ORG }}
+          GHCONTRIB_USERS: ${{ secrets.GHCONTRIB_USERS }}
+          GITHUB_TOKEN: ${{ secrets.GH_CONTRIB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          GHCONTRIB_DETAILS: ${{ vars.GHCONTRIB_DETAILS || 'false' }}
+        run: |
+          ./ghcontrib monitor
