@@ -28,7 +28,7 @@ func NewWebhookNotifier(webhookURL string) *WebhookNotifier {
 
 func (w *WebhookNotifier) Send(ctx context.Context, message Message) error {
 	payload := map[string]interface{}{
-		"text": message.Text,
+		"message": message.Text,
 	}
 
 	body, err := json.Marshal(payload)
