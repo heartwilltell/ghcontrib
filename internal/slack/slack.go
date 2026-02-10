@@ -28,7 +28,7 @@ func NewWebhookNotifier(webhookURL string) *WebhookNotifier {
 
 func (w *WebhookNotifier) Send(ctx context.Context, message Message) error {
 	payload := map[string]interface{}{
-		"blocks": message.Blocks,
+		"text": message.Text,
 	}
 
 	body, err := json.Marshal(payload)
@@ -74,6 +74,7 @@ func NewBotNotifier(token, channel string) *BotNotifier {
 func (b *BotNotifier) Send(ctx context.Context, message Message) error {
 	payload := map[string]interface{}{
 		"channel": b.channel,
+		"text":    message.Text,
 		"blocks":  message.Blocks,
 	}
 
