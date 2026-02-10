@@ -27,7 +27,7 @@ func NewWebhookNotifier(webhookURL string) *WebhookNotifier {
 }
 
 func (w *WebhookNotifier) Send(ctx context.Context, message Message) error {
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"message": message.Text,
 	}
 
@@ -128,7 +128,7 @@ func (c *ConsoleNotifier) Send(ctx context.Context, message Message) error {
 	fmt.Println("\n" + strings.Repeat("=", 60))
 	fmt.Println("DRY RUN - Notification Preview")
 	fmt.Println(strings.Repeat("=", 60))
-	
+
 	for _, block := range message.Blocks {
 		if block.Text != nil {
 			text := block.Text.Text
@@ -136,7 +136,7 @@ func (c *ConsoleNotifier) Send(ctx context.Context, message Message) error {
 			fmt.Println(text)
 		}
 	}
-	
+
 	fmt.Println(strings.Repeat("=", 60) + "\n")
 	return nil
 }
