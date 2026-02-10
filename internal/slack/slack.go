@@ -72,7 +72,7 @@ func NewBotNotifier(token, channel string) *BotNotifier {
 }
 
 func (b *BotNotifier) Send(ctx context.Context, message Message) error {
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"channel": b.channel,
 		"text":    message.Text,
 		"blocks":  message.Blocks,
