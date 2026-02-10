@@ -1,0 +1,74 @@
+version: 2
+
+project_name: ghcontrib
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: ./cmd
+    binary: ghcontrib
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}}
+
+archives:
+  - format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+dockers:
+  - image_templates:
+      - "ghcr.io/heartwilltell/ghcontrib:{{ .Version }}-amd64"
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/amd64"
+    goarch: amd64
+    dockerfile: Dockerfile.goreleaser
+  - image_templates:
+      - "ghcr.io/heartwilltell/ghcontrib:{{ .Version }}-arm64"
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/arm64"
+    goarch: arm64
+    dockerfile: Dockerfile.goreleaser
+
+docker_manifests:
+  - name_template: "ghcr.io/heartwilltell/ghcontrib:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/heartwilltell/ghcontrib:{{ .Version }}-amd64"
+      - "ghcr.io/heartwilltell/ghcontrib:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/heartwilltell/ghcontrib:latest"
+    image_templates:
+      - "ghcr.io/heartwilltell/ghcontrib:{{ .Version }}-amd64"
+      - "ghcr.io/heartwilltell/ghcontrib:{{ .Version }}-arm64"
+
+brews:
+  - repository:
+      owner: heartwilltell
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    homepage: "https://github.com/heartwilltell/ghcontrib"
+    description: "Monitor GitHub contributions to an organization and send Slack notifications"
+    license: "MIT"
+    install: |
+      bin.install "ghcontrib"
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
