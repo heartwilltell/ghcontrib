@@ -34,5 +34,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_CONTRIB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           GHCONTRIB_DETAILS: ${{ vars.GHCONTRIB_DETAILS || 'false' }}
+          GHCONTRIB_THRESHOLD: 5
         run: |
           ./ghcontrib monitor
