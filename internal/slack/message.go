@@ -71,13 +71,16 @@ func formatUserText(user string, events []github.Event, showDetails bool) string
 func formatEventText(event github.Event) string {
 	switch event.Type {
 	case github.EventTypePush:
+		branch := strings.TrimPrefix(event.Payload.Ref, "refs/heads/")
 		commitCount := event.Payload.Size
 		if commitCount == 0 {
 			commitCount = len(event.Payload.Commits)
 		}
-		branch := strings.TrimPrefix(event.Payload.Ref, "refs/heads/")
-		return fmt.Sprintf("  • Pushed %d commit(s) to `%s` in %s",
-			commitCount, branch, event.Repo.Name)
+		if commitCount > 0 {
+			return fmt.Sprintf("  • Pushed %d commit(s) to `%s` in %s",
+				commitCount, branch, event.Repo.Name)
+		}
+		return fmt.Sprintf("  • Pushed to `%s` in %s", branch, event.Repo.Name)
 
 	case github.EventTypePullRequest:
 		action := event.Payload.Action
@@ -139,13 +142,17 @@ func formatEventDetail(event github.Event) Block {
 
 	switch event.Type {
 	case github.EventTypePush:
+		branch := strings.TrimPrefix(event.Payload.Ref, "refs/heads/")
 		commitCount := event.Payload.Size
 		if commitCount == 0 {
 			commitCount = len(event.Payload.Commits)
 		}
-		branch := strings.TrimPrefix(event.Payload.Ref, "refs/heads/")
-		text = fmt.Sprintf("  • Pushed %d commit(s) to `%s` in %s",
-			commitCount, branch, event.Repo.Name)
+		if commitCount > 0 {
+			text = fmt.Sprintf("  • Pushed %d commit(s) to `%s` in %s",
+				commitCount, branch, event.Repo.Name)
+		} else {
+			text = fmt.Sprintf("  • Pushed to `%s` in %s", branch, event.Repo.Name)
+		}
 
 	case github.EventTypePullRequest:
 		action := event.Payload.Action
