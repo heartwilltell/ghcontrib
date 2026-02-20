@@ -3,10 +3,9 @@ name: Daily GitHub Contributions Report
 on:
   schedule:
     # Runs at 15:00 UTC (16:00 CET / 17:00 CEST) on weekdays (Monday-Friday)
-    # Note: GitHub Actions uses UTC. Adjust if needed:
+    # Note: GitHub Actions uses UTC. CET = UTC+1, CEST = UTC+2.
     #   - 15:00 UTC = 16:00 CET (winter) / 17:00 CEST (summer)
-    #   - 14:00 UTC = 15:00 CET (winter) / 16:00 CEST (summer)
-    - cron: "0 20 * * 1-5"
+    - cron: "0 15 * * 1-5"
   # Allows manual triggering from the Actions tab
   workflow_dispatch:
 
